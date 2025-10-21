@@ -1,0 +1,6 @@
+pdf_dir=C:\Users\keyar\Documents\Projects\FullyLocalRag\data
+index_dir=C:\Users\keyar\Documents\Projects\FullyLocalRag\vector_store
+model_name=BAAI/bge-small-en-v1.5
+device=cpu
+chunk_size=1000
+chunk_overlap=150
