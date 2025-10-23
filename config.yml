@@ -1,5 +1,5 @@
 paths:
-  pdf_dir: "./data"
+  pdf_dir: "./corpus/pdfs"
   index_dir: "./vector_store"
 
 embedding:
@@ -9,3 +9,8 @@ embedding:
 chunking:
   chunk_size: 1000
   chunk_overlap: 150
+
+llm:
+  hf_model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+  temperature: 0.2
+  max_new_tokens: 300
