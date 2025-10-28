@@ -1,0 +1,116 @@
+# -----------------------------
+# Python general
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+MANIFEST
+
+# -----------------------------
+# Virtual environments
+# -----------------------------
+.venv/
+venv/
+env/
+ENV/
+.conda/
+*.env
+*.venv
+
+# -----------------------------
+# IDEs / Editors
+# -----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# -----------------------------
+# OS / Miscellaneous
+# -----------------------------
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
+
+# -----------------------------
+# Cache / Artifacts
+# -----------------------------
+.cache/
+__cache__/
+*.cache
+*.pytest_cache/
+.ipynb_checkpoints/
+
+# -----------------------------
+# FAISS / Embeddings / Indexes
+# -----------------------------
+index/
+faiss_index/
+*.faiss
+*.bin
+*.pkl
+*.npy
+*.npz
+manifest.txt
+
+# -----------------------------
+# Data / PDFs / Outputs
+# -----------------------------
+data/
+datasets/
+*.pdf
+*.csv
+*.jsonl
+*.tsv
+*.txt
+*.docx
+*.rtf
+*.md
+*.html
+
+# -----------------------------
+# Model / Checkpoints
+# -----------------------------
+models/
+*.gguf
+*.ggml
+*.safetensors
+*.pt
+*.bin
+*.h5
+
+# -----------------------------
+# Environment & Config
+# -----------------------------
+.env
+.env.*
+config.yml
+config.yaml
+
+# -----------------------------
+# Logs / Reports / Runs
+# -----------------------------
+logs/
+reports/
+runs/
+*.out
+*.err
+
+# -----------------------------
+# Temporary / Backup
+# -----------------------------
+tmp/
+temp/
+*.old
+*.orig
+*.backup

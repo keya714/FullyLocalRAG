@@ -1,16 +1,52 @@
 paths:
-  pdf_dir: "./corpus/pdfs"
-  index_dir: "./vector_store"
+  pdf_dir: ./corpus
+  index_dir: ./index
+  gguf_path: ./models/Phi-3-mini-4k-instruct-q4.gguf  # llama.cpp model file
 
 embedding:
-  model_name: "BAAI/bge-small-en-v1.5"
-  device: "cpu"
+  model_name: sentence-transformers/all-MiniLM-L6-v2
+  device: cpu
 
 chunking:
-  chunk_size: 1000
-  chunk_overlap: 150
+  chunk_size: 900
+  chunk_overlap: 120
+
+retrieval:
+  top_k: 6
+  strategy: hybrid        # dense | bm25 | hybrid (works if you used my hybrid retriever)
+  bm25_weight: 0.5
+  mmr: false
+  min_context_chars: 800
+  low_recall_threshold: 2
 
 llm:
-  hf_model: "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
+  backend: llamacpp       # <- you're on Windows, so this avoids bitsandbytes
+  # Transformers fields below are ignored when backend=llamacpp; safe to keep or delete
+  hf_model: Phi-3-mini-4k-instruct-q4.gguf
+  max_new_tokens: 320
   temperature: 0.2
-  max_new_tokens: 300
+  do_sample: false
+  quantization: none
+  device_map: auto
+  torch_dtype: auto
+
+  # llama.cpp runtime
+  n_ctx: 4096
+  n_threads: 4            # set to your logical cores (e.g., 8 if i7)
+  n_gpu_layers: 0         # 0 = CPU only (set >0 if you built CUDA version)
+
+guardrails:
+  enabled: true
+  blocked_topics:
+    - self-harm
+    - explicit_illegal_howto
+    - malware
+    - explosives
+    - hate
+  deny_message: >
+    I can’t help with that topic. If you have another question, I’m happy to help with safe, allowed topics.
+
+cli:
+  pretty_print: true
+  show_sources: true
+  max_source_chars: 600
