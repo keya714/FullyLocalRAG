@@ -274,65 +274,66 @@ These metrics help showcase the system's responsiveness and resource usage on ty
 
 
 ### Flowchart:
+
 ```mermaid
 flowchart TD
 
 %% === MAIN PIPELINE ===
-A([🧠 User Query<br>(CLI Input)]) --> B{🛡️ Guardrails Check}
+A([User Query\n(CLI Input)]) --> B{Guardrails Check}
 
-B -->|❌ Unsafe Query| B1[[🚫 Deny Message<br>(from config.yml)]]
-B -->|✅ Safe Query| C[🔍 Retrieve Relevant Chunks]
+B -->|Unsafe Query| B1[[Deny Message\n(from config.yml)]]
+B -->|Safe Query| C[Retrieve Relevant Chunks]
 
 
 %% === RETRIEVAL STAGE ===
-subgraph R1[📚 Retrieval]
-    C --> D1[(💠 Dense Retrieval<br>(FAISS))]
-    C --> D2[(📄 Sparse Retrieval<br>(BM25))]
-    D1 --> D3[⚖️ RRF Fusion<br>(Reciprocal Rank Fusion)]
+subgraph R1[Retrieval]
+    C --> D1[(Dense Retrieval\n(FAISS))]
+    C --> D2[(Sparse Retrieval\n(BM25))]
+    D1 --> D3[RRF Fusion\n(Reciprocal Rank Fusion)]
     D2 --> D3
-    D3 -->|Optional| D4[🎯 Cross-Encoder Reranking]
+    D3 -->|Optional| D4[Cross-Encoder Reranking]
 end
 
-D4 --> E[📑 Selected Top-k Chunks]
+D4 --> E[Selected Top-k Chunks]
 D3 --> E
 
 
 %% === VALIDATION & GENERATION ===
-E --> F{🧩 Query–Context Validation<br>(LLM Intent Check)}
+E --> F{Query–Context Validation\n(LLM Intent Check)}
 
-F -->|⚠️ Irrelevant| F1[[♻️ Query Reformulation + Retry]]
-F -->|🟢 Relevant| G[🤖 LLM Generation (Ollama)]
+F -->|Irrelevant| F1[[Query Reformulation + Retry]]
+F -->|Relevant| G[LLM Generation (Ollama)]
 
 
 %% === MAP–REDUCE REASONING ===
-subgraph G1[🧭 Generation (Map–Reduce)]
-    G2[🗺️ Map Step:<br>Per-chunk factual extraction]
-    G3[🧮 Reduce Step:<br>Aggregate & compose final answer]
+subgraph G1[Generation (Map–Reduce)]
+    G2[Map Step:\nPer-chunk factual extraction]
+    G3[Reduce Step:\nAggregate & compose final answer]
     G2 --> G3
 end
 
 E --> G2
-G3 --> H[📝 Final Answer]
+G3 --> H[Final Answer]
 
 
 %% === OUTPUT & METRICS ===
-H --> I[💻 CLI Output:<br>Answer + Sources + Timings]
-H --> M[⏱️ Metrics:<br>Retrieval • LLM • Total Time]
+H --> I[CLI Output:\nAnswer + Sources + Timings]
+H --> M[Metrics:\nRetrieval • LLM • Total Time]
 
 
 %% === INGEST PIPELINE ===
-subgraph P1[⚙️ Ingest Pipeline]
-    I1[[📥 Load PDFs<br>(PyPDFLoader)]]
-    I2[[🧹 Chunking & Cleaning]]
-    I3[[🧠 Embeddings<br>(Sentence Transformer)]]
-    I4[[🗂️ Index Build<br>(FAISS + BM25)]]
+subgraph P1[Ingest Pipeline]
+    I1[[Load PDFs\n(PyPDFLoader)]]
+    I2[[Chunking & Cleaning]]
+    I3[[Embeddings\n(Sentence Transformer)]]
+    I4[[Index Build\n(FAISS + BM25)]]
     I1 --> I2 --> I3 --> I4
 end
 
 
 %% === RELATIONSHIPS ===
 I4 -.-> C
-config[[⚙️ config.yml:<br>Paths • Models • Params]] -.-> B
+config[[config.yml:\nPaths • Models • Params]] -.-> B
 config -.-> C
 config -.-> G
 
