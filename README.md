@@ -49,14 +49,18 @@ A Retrieval-Augmented Generation (RAG) system that runs **entirely on a laptop**
 
 ```
 .
-├─ corpus/
-├─ index/
+├─ corpus/   # put PDFs here (example: LULC_Paper.pdf)
+├─ index/                     # built FAISS index + manifest
+│  ├─ index.faiss
+│  ├─ index.pkl
+│  └─ manifest.txt
 ├─ models/
-├─ ingest.py
-├─ main.py
-├─ retriever.py
-├─ safety.py
-├─ config.yml
+│  └─ Phi-3-mini-4k-instruct-q4.gguf
+├─ ingest.py                  # build index from PDFs
+├─ main.py                    # CLI app (ask questions)
+├─ retriever.py               # hybrid retrieval + RRF (+ optional reranker)
+├─ safety.py                  # keyword guardrails
+├─ config.yml                 # all configuration
 ├─ requirements.txt
 └─ eval.py
 ```
@@ -64,6 +68,11 @@ A Retrieval-Augmented Generation (RAG) system that runs **entirely on a laptop**
 ---
 
 ## 3) Quickstart
+###Prereqs
+
+Python 3.10+ recommended
+On CPU-only laptops: works out of the box.
+(Optional) If using GPU for embeddings or llama.cpp offload, ensure CUDA toolchain is set up.
 
 ### Install
 
@@ -123,10 +132,49 @@ guardrails:
   enabled: true
   blocked_topics: ["self-harm", "explicit_illegal_howto", "malware", "explosives", "hate"]
   deny_message: "I can’t help with that topic. If you have another question, I’m happy to help with safe, allowed topics."
+
+cli:
+  show_sources: true
 ```
 
 ---
 
-## 5) License
+### 5) How it Works (Pipeline)
 
-Local research/demo use. Check individual model/data licenses before redistribution.
+#Ingest (ingest.py)
+
+Load PDFs (PyPDFLoader) → per-page docs with source and page metadata.
+
+Clean text (strip noisy symbols, collapse whitespace).
+
+Chunk with overlap.
+
+Embed with sentence-transformers; build FAISS index; persist to ./index.
+
+#Retrieve (retriever.py)
+
+Load FAISS and embeddings from disk.
+
+-Hybrid search:
+
+Dense: FAISS similarity_search_with_score.
+
+Sparse: BM25 over docstore text (built in memory).
+
+Fuse with RRF.
+
+(Optional) Cross-encoder rerank (if sentence-transformers CrossEncoder is installed).
+
+Format context with [filename#pX] headers.
+
+#Generate (main.py)
+
+Guardrails check; deny if matches blocked topics.
+
+If few unique sources, try simple query reformulations and pick the best.
+
+Build a strict prompt (“only use context; otherwise say ‘I don’t know…’”).
+
+Generate with local llama.cpp using the configured GGUF.
+
+Print answer + source list.
