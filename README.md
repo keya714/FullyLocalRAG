@@ -141,7 +141,7 @@ cli:
 
 ### 5) How it Works (Pipeline)
 
-#Ingest (ingest.py)
+# Ingest (ingest.py)
 
 Load PDFs (PyPDFLoader) → per-page docs with source and page metadata.
 
@@ -151,7 +151,7 @@ Chunk with overlap.
 
 Embed with sentence-transformers; build FAISS index; persist to ./index.
 
-#Retrieve (retriever.py)
+# Retrieve (retriever.py)
 
 Load FAISS and embeddings from disk.
 
@@ -167,7 +167,7 @@ Fuse with RRF.
 
 Format context with [filename#pX] headers.
 
-#Generate (main.py)
+# Generate (main.py)
 
 Guardrails check; deny if matches blocked topics.
 
