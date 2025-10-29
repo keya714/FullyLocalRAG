@@ -20,21 +20,11 @@ retrieval:
   low_recall_threshold: 2
 
 llm:
-  backend: llamacpp   
-  # Transformers fields below are ignored when backend=llamacpp; safe to keep or delete
-  hf_model: Phi-3-mini-4k-instruct-q4.gguf
-  max_new_tokens: 600
-  temperature: 0.1
-  do_sample: false
-  quantization: none
-  device_map: auto
-  torch_dtype: auto
-
-  # llama.cpp runtime
+  model: "llama3.2"   # or any model you `ollama pull`
   n_ctx: 4096
-  n_threads: 4            # set to your logical cores (e.g., 8 if i7)
-  n_gpu_layers: 0         # 0 = CPU only (set >0 if you built CUDA version)
-  stop: ["<|user|>", "</s>", "Question:", "Bullet digest:"]
+  temperature: 0.3
+  max_new_tokens: 512
+  stop: []               # e.g., ["<|assistant|>", "</s>"]
 
 
 guardrails:

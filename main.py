@@ -13,6 +13,8 @@ from rich.console import Console
 
 from retriever import load_vector_store, retrieve, format_context, unique_source_count
 from models import LlamaCppConfig, LlamaCppWrapper
+from models import OllamaConfig, OllamaWrapper
+
 from safety import GuardConfig, check_guardrails
 import torch
 
@@ -41,26 +43,14 @@ MAP_SYSTEM = (
     "If a chunk does not contain answerable facts, output exactly: NO-FACT."
 )
 
-REDUCE_SYSTEM = (
-    "You are a precise, factual assistant. Use ONLY the provided bullet digest to answer. "
-    "If the digest lacks sufficient facts to answer, reply exactly: "
-    "\"I don't know based on the provided documents.\" "
-    "Answer in 1–2 sentences. Include inline citations like [filename#page] by using the tags in the bullets."
-)
-
 # ----------------------------
 # Helpers
 # ----------------------------
 def load_cfg(path: str = "config.yml") -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
-
-def build_messages(question: str, context: str) -> List[Dict[str,str]]:
-    return [
-        {"role": "system", "content": SYSTEM_MSG},
-        {"role": "user", "content": f"Question:\n{question}\n\nContext:\n{context}"}
-    ]
-
+    
+    
 def build_llama_prompt(messages: list[dict[str, str]]) -> str:
     out = []
     for m in messages:
@@ -90,7 +80,7 @@ def is_reference_chunk(d) -> bool:
 # ----------------------------
 # Map → Reduce prompts
 # ----------------------------
-def summarize_chunk(llm: LlamaCppWrapper, question: str, tag: str, text: str) -> Optional[str]:
+def summarize_chunk(llm: OllamaWrapper, question: str, tag: str, text: str) -> Optional[str]:
     """
     Returns bullet lines prefixed with (tag) for relevant facts, or None if NO-FACT.
     """
@@ -125,7 +115,7 @@ def summarize_chunk(llm: LlamaCppWrapper, question: str, tag: str, text: str) ->
             bullets.append(f"- ({tag}) {ln}")
     return "\n".join(bullets) if bullets else None
 
-def answer_from_digest(llm: LlamaCppWrapper, question: str, digest: str) -> str:
+def answer_from_digest(llm: OllamaWrapper, question: str, digest: str) -> str:
     # Reset KV cache before final reduce
     try:
         llm.llm.reset()
@@ -133,7 +123,7 @@ def answer_from_digest(llm: LlamaCppWrapper, question: str, digest: str) -> str:
         pass
 
     msgs = [
-        {"role":"system","content": REDUCE_SYSTEM},
+        {"role":"system","content": SYSTEM_MSG},
         {"role":"user","content": f"Question: {question}\n\nBullet digest:\n{digest}"}
     ]
     prompt = build_llama_prompt(msgs)
@@ -159,7 +149,10 @@ def chat(
     )
     blocked, msg = check_guardrails(q, gcfg)
     if blocked:
+        retrieval_time = time.perf_counter() - t0
         console.print(f"[red]{msg}[/]")
+        console.print(f"[cyan]LLM generation took:[/cyan] [bold]{retrieval_time:.2f}s[/bold]")
+        console.print(f"[yellow]Total time:[/yellow] [bold]{retrieval_time:.2f}s[/bold]")
         sys.exit(0)
 
     # Retrieval config
@@ -200,20 +193,15 @@ def chat(
     sys.stdout.flush()
     t1 = time.perf_counter()
 
-    # Load LLM (llama.cpp)
-    temperature = float(cfg["llm"].get("temperature", 0.2))
-    max_new_tokens = int(cfg["llm"].get("max_new_tokens", 320))
-    lcfg = LlamaCppConfig(
-        gguf_path=cfg["paths"]["gguf_path"],
-        n_ctx=int(cfg["llm"].get("n_ctx", 4096)),
-        n_threads=int(cfg["llm"].get("n_threads", 4)),
-        n_gpu_layers=int(cfg["llm"].get("n_gpu_layers", 0)),
+    # Load LLM (Ollama)
+    lcfg = OllamaConfig(
+        model=str(cfg["llm"].get("model", "llama3.2")),
+        num_ctx=int(cfg["llm"].get("n_ctx", 4096)),
         temperature=float(cfg["llm"].get("temperature", 0.2)),
         max_new_tokens=int(cfg["llm"].get("max_new_tokens", 320)),
-        stop=tuple(cfg["llm"].get("stop", []))
+        stop=tuple(cfg["llm"].get("stop", [])),
     )
-
-    llm = LlamaCppWrapper(lcfg)
+    llm = OllamaWrapper(lcfg)
 
     # ----------------------------
     # MAP: per-chunk relevance summaries
