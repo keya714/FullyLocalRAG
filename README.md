@@ -274,6 +274,7 @@ These metrics help showcase the system's responsiveness and resource usage on ty
 
 
 ### Flowchart:
+```mermaid
 flowchart TD
 
 %% === MAIN PIPELINE ===
