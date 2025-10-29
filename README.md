@@ -183,11 +183,10 @@ Print answer + source list.
 This system now uses a two-stage reasoning process to make the model answer only within the boundaries of retrieved documents and avoid hallucinations.
 
 #### How it works
-
-* 1) Retrieve
+ 1) Retrieve
 The retriever (FAISS + BM25 hybrid) fetches top-k chunks from the local corpus.
 
-* 2) Map Step – Per-Chunk Summarization
+ 2) Map Step – Per-Chunk Summarization
 Each retrieved chunk is sent separately to the LLM with a strict instruction:
 
 “Extract only facts that directly answer the question; if none, output NO-FACT.”
@@ -195,7 +194,7 @@ Each retrieved chunk is sent separately to the LLM with a strict instruction:
 Only relevant factual snippets are returned as short bullet points, each tagged with its document citation
 (e.g., - (LULC_Paper.pdf#p7) The study area is Dhanera, Gujarat, India).
 
-* 3) Reduce Step – Final Decision
+ 3) Reduce Step – Final Decision
 The model then receives a compressed digest of all factual bullets and is asked to:
 
 Generate a concise, citation-based answer only from those bullets, or
