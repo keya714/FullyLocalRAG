@@ -274,51 +274,83 @@ These metrics help showcase the system's responsiveness and resource usage on ty
 
 
 ### Flowchart:
-
 flowchart TD
 
-A[User Query (CLI Input)] --> B[Guardrails Check]
-B -->|Unsafe Query| B1[Deny Message<br>(from config.yml)]
-B -->|Safe Query| C[Retrieve Relevant Chunks]
+%% === MAIN PIPELINE ===
+A([🧠 User Query<br>(CLI Input)]) --> B{🛡️ Guardrails Check}
 
-subgraph Retrieval
-    C --> D1[Dense Retrieval (FAISS)]
-    C --> D2[Sparse Retrieval (BM25)]
-    D1 --> D3[RRF Fusion]
+B -->|❌ Unsafe Query| B1[[🚫 Deny Message<br>(from config.yml)]]
+B -->|✅ Safe Query| C[🔍 Retrieve Relevant Chunks]
+
+
+%% === RETRIEVAL STAGE ===
+subgraph R1[📚 Retrieval]
+    C --> D1[(💠 Dense Retrieval<br>(FAISS))]
+    C --> D2[(📄 Sparse Retrieval<br>(BM25))]
+    D1 --> D3[⚖️ RRF Fusion<br>(Reciprocal Rank Fusion)]
     D2 --> D3
-    D3 -->|Optional| D4[Cross-Encoder Reranking]
+    D3 -->|Optional| D4[🎯 Cross-Encoder Reranking]
 end
 
-D4 --> E[Selected Top-k Chunks]
+D4 --> E[📑 Selected Top-k Chunks]
 D3 --> E
 
-E --> F[Query-Context Validation<br>(LLM Intent Check)]
-F -->|Irrelevant| F1[Query Reformulation + Retry]
-F -->|Relevant| G[LLM Generation (Ollama)]
 
-subgraph Generation
-    G1[Map Step:<br>Per-chunk factual extraction]
-    G2[Reduce Step:<br>Aggregate & compose final answer]
+%% === VALIDATION & GENERATION ===
+E --> F{🧩 Query–Context Validation<br>(LLM Intent Check)}
+
+F -->|⚠️ Irrelevant| F1[[♻️ Query Reformulation + Retry]]
+F -->|🟢 Relevant| G[🤖 LLM Generation (Ollama)]
+
+
+%% === MAP–REDUCE REASONING ===
+subgraph G1[🧭 Generation (Map–Reduce)]
+    G2[🗺️ Map Step:<br>Per-chunk factual extraction]
+    G3[🧮 Reduce Step:<br>Aggregate & compose final answer]
+    G2 --> G3
 end
 
-E --> G1 --> G2 --> H[Final Answer]
+E --> G2
+G3 --> H[📝 Final Answer]
 
-H --> I[Output to CLI<br>Answer + Sources + Timings]
 
-%% Supporting Modules
-subgraph Ingest Pipeline
-    I1[Load PDFs (PyPDFLoader)]
-    I2[Chunking & Cleaning]
-    I3[Embeddings (Sentence Transformer)]
-    I4[Index Build (FAISS + BM25)]
+%% === OUTPUT & METRICS ===
+H --> I[💻 CLI Output:<br>Answer + Sources + Timings]
+H --> M[⏱️ Metrics:<br>Retrieval • LLM • Total Time]
+
+
+%% === INGEST PIPELINE ===
+subgraph P1[⚙️ Ingest Pipeline]
+    I1[[📥 Load PDFs<br>(PyPDFLoader)]]
+    I2[[🧹 Chunking & Cleaning]]
+    I3[[🧠 Embeddings<br>(Sentence Transformer)]]
+    I4[[🗂️ Index Build<br>(FAISS + BM25)]]
     I1 --> I2 --> I3 --> I4
 end
 
-%% Relations
+
+%% === RELATIONSHIPS ===
 I4 -.-> C
-config[config.yml: settings & paths] -.-> B
+config[[⚙️ config.yml:<br>Paths • Models • Params]] -.-> B
 config -.-> C
 config -.-> G
 
-%% Metrics
-H --> M[Metrics Display:<br>Retrieval Time / LLM Time / Total Time]
+%% === STYLING ===
+style A fill:#4B89DC,stroke:#1A3F91,color:#fff
+style B fill:#FFD700,stroke:#C59A00
+style C fill:#FFF7E6,stroke:#C59A00
+style D1 fill:#E3F2FD,stroke:#1A73E8
+style D2 fill:#E3F2FD,stroke:#1A73E8
+style D3 fill:#D1C4E9,stroke:#512DA8
+style D4 fill:#B39DDB,stroke:#4527A0
+style E fill:#C8E6C9,stroke:#2E7D32
+style F fill:#FFE0B2,stroke:#F57C00
+style F1 fill:#FFCDD2,stroke:#C62828
+style G fill:#E8EAF6,stroke:#3F51B5
+style G2 fill:#E3F2FD,stroke:#1976D2
+style G3 fill:#C5CAE9,stroke:#303F9F
+style H fill:#A5D6A7,stroke:#1B5E20
+style I fill:#DCEDC8,stroke:#558B2F
+style M fill:#F0F4C3,stroke:#827717
+style config fill:#ECEFF1,stroke:#455A64
+style P1 fill:#FFF3E0,stroke:#EF6C00
