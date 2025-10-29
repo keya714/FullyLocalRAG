@@ -12,7 +12,8 @@ dist/
 build/
 .eggs/
 MANIFEST
-
+models/
+index/
 # -----------------------------
 # Virtual environments
 # -----------------------------
