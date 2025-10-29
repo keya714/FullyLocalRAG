@@ -275,6 +275,8 @@ These metrics help showcase the system's responsiveness and resource usage on ty
 
 ### Flowchart:
 
+flowchart TD
+
 A[User Query (CLI Input)] --> B[Guardrails Check]
 B -->|Unsafe Query| B1[Deny Message<br>(from config.yml)]
 B -->|Safe Query| C[Retrieve Relevant Chunks]
