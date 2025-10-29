@@ -141,7 +141,7 @@ cli:
 
 ### 5) How it Works (Pipeline)
 
-# Ingest (ingest.py)
+* Ingest (ingest.py)
 
 Load PDFs (PyPDFLoader) → per-page docs with source and page metadata.
 
@@ -151,7 +151,7 @@ Chunk with overlap.
 
 Embed with sentence-transformers; build FAISS index; persist to ./index.
 
-# Retrieve (retriever.py)
+* Retrieve (retriever.py)
 
 Load FAISS and embeddings from disk.
 
@@ -167,7 +167,7 @@ Fuse with RRF.
 
 Format context with [filename#pX] headers.
 
-# Generate (main.py)
+* Generate (main.py)
 
 Guardrails check; deny if matches blocked topics.
 
@@ -178,3 +178,37 @@ Build a strict prompt (“only use context; otherwise say ‘I don’t know…�
 Generate with local llama.cpp using the configured GGUF.
 
 Print answer + source list.
+
+### 6) Map–Reduce Answering Pipeline (Improved RAG)
+This system now uses a two-stage reasoning process to make the model answer only within the boundaries of retrieved documents and avoid hallucinations.
+
+#### How it works
+
+* 1) Retrieve
+The retriever (FAISS + BM25 hybrid) fetches top-k chunks from the local corpus.
+
+* 2) Map Step – Per-Chunk Summarization
+Each retrieved chunk is sent separately to the LLM with a strict instruction:
+
+“Extract only facts that directly answer the question; if none, output NO-FACT.”
+
+Only relevant factual snippets are returned as short bullet points, each tagged with its document citation
+(e.g., - (LULC_Paper.pdf#p7) The study area is Dhanera, Gujarat, India).
+
+* 3) Reduce Step – Final Decision
+The model then receives a compressed digest of all factual bullets and is asked to:
+
+Generate a concise, citation-based answer only from those bullets, or
+
+Reply exactly with
+
+I don't know based on the provided documents.
+
+
+if the digest lacks enough information.
+
+Output
+
+Short, verifiable answers grounded in local data
+
+Automatic fallback when context is insufficient
