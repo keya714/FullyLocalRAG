@@ -4,7 +4,6 @@ import yaml
 import sys
 from pathlib import Path
 from typing import List, Dict, Tuple, Optional
-from dataclasses import dataclass
 import time
 import os
 
@@ -12,7 +11,6 @@ import typer
 from rich.console import Console
 
 from retriever import load_vector_store, retrieve, format_context, unique_source_count
-from models import LlamaCppConfig, LlamaCppWrapper
 from models import OllamaConfig, OllamaWrapper
 
 from safety import GuardConfig, check_guardrails

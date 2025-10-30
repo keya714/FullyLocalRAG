@@ -38,7 +38,7 @@ pip install -r requirements.txt
 mkdir -p corpus index models
 
 if [ ! -f config.yml ]; then
-    echo "🧾 Creating default config.yml..."
+    echo "Creating default config.yml..."
     cat > config.yml <<'YAML'
 paths:
   pdf_dir: "./corpus"

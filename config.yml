@@ -1,17 +1,19 @@
 paths:
   pdf_dir: ./corpus
   index_dir: ./index
-  gguf_path: ./models/Phi-3-mini-4k-instruct-q4.gguf  # llama.cpp model file
 
 embedding:
   model_name: sentence-transformers/all-MiniLM-L6-v2
   device: cpu
 
 chunking:
-  chunk_size: 900
-  chunk_overlap: 120
+  chunk_size: 400
+  chunk_overlap: 5
 
 retrieval:
+  # use_cross_encoder: true
+  # cross_encoder_model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  # top_k_rerank: 8
   top_k: 5
   strategy: hybrid        # dense | bm25 | hybrid (works if you used my hybrid retriever)
   bm25_weight: 0.5
@@ -22,7 +24,7 @@ retrieval:
 llm:
   model: "llama3.2"   # or any model you `ollama pull`
   n_ctx: 4096
-  temperature: 0.3
+  temperature: 0.4
   max_new_tokens: 512
   stop: []               # e.g., ["<|assistant|>", "</s>"]
 

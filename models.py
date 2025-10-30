@@ -9,7 +9,7 @@ import ollama  # pip install ollama
 # ---- Ollama backend ----
 @dataclass
 class OllamaConfig:
-    model: str = "llama3.1:8b"  # any local ollama tag you have pulled
+    model: str = "llama3.2"  # any local ollama tag you have pulled
     num_ctx: int = 4096
     temperature: float = 0.2
     max_new_tokens: int = 320
